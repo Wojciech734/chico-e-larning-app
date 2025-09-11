@@ -5,12 +5,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/test-controller")
 public class TestController {
 
-    @GetMapping("/say-hello")
+    @GetMapping("/not-the-landing-page")
+    public String testPage() {
+        return "Hi! this isn't the landing page, u must login to access it";
+    }
+
+    @GetMapping("/landing-page/test")
     public String sayHello() {
-        return "Hello World!";
+        return "Hello World! (landing page test)";
     }
 
 }
