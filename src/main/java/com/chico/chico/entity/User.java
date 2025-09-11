@@ -46,4 +46,7 @@ public class User {
 
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
+    private boolean enabled = false;
+
 }
