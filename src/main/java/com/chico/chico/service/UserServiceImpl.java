@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("invalid password or email"));
 
-        if (!passwordEncoder.matches(user.getPassword(), request.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("invalid password or email");
         }
 
