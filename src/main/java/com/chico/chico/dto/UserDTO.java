@@ -22,4 +22,5 @@ public class UserDTO {
     private String avatarImage;
     private Set<Role> roles;
     private LocalDateTime createdAt;
+    private boolean isEnabled;
 }

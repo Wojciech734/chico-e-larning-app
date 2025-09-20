@@ -20,6 +20,7 @@ public class MailServiceImpl implements MailService {
         String content = """
                 <p>Witaj,</p>
                 <p>Dziękujemy za rejestrację. Kliknij w link, aby aktywować swoje konto:</p>
+                <p><a href="%s">Potwierdź konto</a></p>
                 <p>Jeżeli to nie Ty zakładałeś konto - zignoruj tę wiadomość.</p>
                 """.formatted(confirmationUrl);
         try {

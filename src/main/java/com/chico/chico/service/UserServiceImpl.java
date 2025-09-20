@@ -2,7 +2,9 @@ package com.chico.chico.service;
 
 import com.chico.chico.dto.UserDTO;
 import com.chico.chico.entity.User;
+import com.chico.chico.entity.VerificationToken;
 import com.chico.chico.repository.UserRepository;
+import com.chico.chico.repository.VerificationTokenRepository;
 import com.chico.chico.request.LoginRequest;
 import com.chico.chico.request.RegisterRequest;
 import com.chico.chico.response.AuthResponse;
@@ -11,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -18,6 +23,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
+    private final VerificationTokenRepository verificationTokenRepository;
+    private final MailService mailService;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -37,8 +44,16 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        String token = jwtProvider.generateToken(user.getEmail());
-        return new AuthResponse(token, mapToDTO(user));
+        String token = UUID.randomUUID().toString();
+        VerificationToken verificationToken = VerificationToken.builder()
+                .token(token)
+                .user(user)
+                .expiryDate(LocalDateTime.now().plusHours(24))
+                .build();
+        verificationTokenRepository.save(verificationToken);
+        mailService.sendVerificationEmail(user.getEmail(), token);
+
+        return new AuthResponse(null, mapToDTO(user));
     }
 
     @Override
@@ -51,8 +66,27 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("invalid password or email");
         }
 
+        if (!user.isEnabled()) {
+            throw new RuntimeException("Your account hasn't been activated yet");
+        }
+
         String token = jwtProvider.generateToken(user.getEmail());
         return new AuthResponse(token, mapToDTO(user));
+    }
+
+    @Override
+    public void verifyAccount(String token) {
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("invalid verification token"));
+
+        if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("The token has expired");
+        }
+
+        User user = verificationToken.getUser();
+        user.setEnabled(true);
+        userRepository.save(user);
+        verificationTokenRepository.delete(verificationToken);
     }
 
     private UserDTO mapToDTO(User user) {
@@ -63,7 +97,8 @@ public class UserServiceImpl implements UserService {
                 user.getEmail(),
                 user.getAvatarImage(),
                 user.getRoles(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                user.isEnabled()
         );
     }
 }
