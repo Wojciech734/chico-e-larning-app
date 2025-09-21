@@ -32,4 +32,10 @@ public class AuthController {
         userService.verifyAccount(token);
         return ResponseEntity.ok("Your account has been activated. You can login now");
     }
+
+    @PostMapping("/resend-verification-email")
+    public ResponseEntity<String> resendVerificationEmail(@RequestParam String email) {
+        userService.resendVerificationEmail(email);
+        return ResponseEntity.ok("New verification link has been send to your email");
+    }
 }

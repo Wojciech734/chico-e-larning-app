@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -87,6 +88,31 @@ public class UserServiceImpl implements UserService {
         user.setEnabled(true);
         userRepository.save(user);
         verificationTokenRepository.delete(verificationToken);
+    }
+
+    @Override
+    public void resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.isEnabled()) {
+            throw new RuntimeException("This account has already been verified");
+        }
+
+        verificationTokenRepository.findAll()
+                .stream()
+                .filter(t -> t.getUser().equals(user))
+                .forEach(verificationTokenRepository::delete);
+
+        String newToken = UUID.randomUUID().toString();
+        VerificationToken verificationToken = VerificationToken.builder()
+                .token(newToken)
+                .user(user)
+                .expiryDate(LocalDateTime.now().plusHours(24))
+                .build();
+
+        verificationTokenRepository.save(verificationToken);
+        mailService.sendVerificationEmail(user.getEmail(), newToken);
     }
 
     private UserDTO mapToDTO(User user) {
