@@ -11,4 +11,6 @@ public interface UserService {
     AuthResponse login(LoginRequest request);
     void verifyAccount(String token);
     void resendVerificationEmail(String email);
+    void forgotPassword(String email);
+    void resetPassword(String token, String newPassword);
 }

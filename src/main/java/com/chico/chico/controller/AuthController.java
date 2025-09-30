@@ -1,7 +1,6 @@
 package com.chico.chico.controller;
 
-import com.chico.chico.request.LoginRequest;
-import com.chico.chico.request.RegisterRequest;
+import com.chico.chico.request.*;
 import com.chico.chico.response.AuthResponse;
 import com.chico.chico.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +33,20 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification-email")
-    public ResponseEntity<String> resendVerificationEmail(@RequestParam String email) {
-        userService.resendVerificationEmail(email);
+    public ResponseEntity<String> resendVerificationEmail(@RequestBody EmailRequest request) {
+        userService.resendVerificationEmail(request.getEmail());
         return ResponseEntity.ok("New verification link has been send to your email");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody EmailRequest request) {
+        userService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok("Password reset link has been sent to your email");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(token, request.getNewPassword());
+        return ResponseEntity.ok("Password has been reset successfully");
     }
 }

@@ -31,7 +31,34 @@ public class MailServiceImpl implements MailService {
             helper.setText(content, true);
             mailSender.send(message);
         } catch (Exception e) {
-            throw new RuntimeException("Nie udało się wysłać emaila", e);
+            throw new RuntimeException("error: cannot send an email", e);
         }
+    }
+
+    @Override
+    public void sendPasswordResetEmail(String to, String token) {
+        String subject = "Reset hasła";
+        String passwordResetUrl = "http://localhost:8080/api/auth/reset-password?token=" + token;
+        String content = """
+                <p>Witaj, </p>
+                <p>Kliknij w link, aby zresetować swoje hasło:</p>
+                <p><a href="%s">Resetuj hasło</a>
+                <p>Jeżeli to nie Ty - zignoruj tę wiadomość.</p>
+                """.formatted(passwordResetUrl);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(content, true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("error: cannot send an email", e);
+        }
+    }
+
+    @Override
+    public void sendEmailResetEmail(String to, String token) {
+
     }
 }

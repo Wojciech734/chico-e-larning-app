@@ -1,8 +1,10 @@
 package com.chico.chico.service;
 
 import com.chico.chico.dto.UserDTO;
+import com.chico.chico.entity.PasswordResetToken;
 import com.chico.chico.entity.User;
 import com.chico.chico.entity.VerificationToken;
+import com.chico.chico.repository.PasswordResetTokenRepository;
 import com.chico.chico.repository.UserRepository;
 import com.chico.chico.repository.VerificationTokenRepository;
 import com.chico.chico.request.LoginRequest;
@@ -26,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final VerificationTokenRepository verificationTokenRepository;
     private final MailService mailService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -113,6 +116,41 @@ public class UserServiceImpl implements UserService {
 
         verificationTokenRepository.save(verificationToken);
         mailService.sendVerificationEmail(user.getEmail(), newToken);
+    }
+
+    @Override
+    public void forgotPassword(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Optional<PasswordResetToken> oldToken = passwordResetTokenRepository.findByUser(user);
+        oldToken.ifPresent(passwordResetTokenRepository::delete);
+
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .token(token)
+                .user(user)
+                .expiryDate(LocalDateTime.now().plusMinutes(30))
+                .build();
+
+        passwordResetTokenRepository.save(resetToken);
+        mailService.sendPasswordResetEmail(user.getEmail(), token);
+    }
+
+    @Override
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Reset token has expired");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        passwordResetTokenRepository.delete(resetToken);
     }
 
     private UserDTO mapToDTO(User user) {
