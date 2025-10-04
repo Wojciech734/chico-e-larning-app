@@ -1,12 +1,15 @@
 package com.chico.chico.service;
 
 import com.chico.chico.dto.UserDTO;
+import com.chico.chico.entity.EmailChangeToken;
 import com.chico.chico.entity.PasswordResetToken;
 import com.chico.chico.entity.User;
 import com.chico.chico.entity.VerificationToken;
+import com.chico.chico.repository.EmailChangeTokenRepository;
 import com.chico.chico.repository.PasswordResetTokenRepository;
 import com.chico.chico.repository.UserRepository;
 import com.chico.chico.repository.VerificationTokenRepository;
+import com.chico.chico.request.EmailChangeRequest;
 import com.chico.chico.request.LoginRequest;
 import com.chico.chico.request.RegisterRequest;
 import com.chico.chico.response.AuthResponse;
@@ -29,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final MailService mailService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailChangeTokenRepository emailChangeTokenRepository;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -151,6 +155,46 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         passwordResetTokenRepository.delete(resetToken);
+    }
+
+    @Override
+    public void requestEmailChange(EmailChangeRequest request) {
+        String email = jwtProvider.extractEmailFromToken(request.getJwtToken());
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        emailChangeTokenRepository.findByUser(user)
+                .ifPresent(emailChangeTokenRepository::delete);
+
+        String token = UUID.randomUUID().toString();
+        EmailChangeToken changeToken = EmailChangeToken.builder()
+                .token(token)
+                .user(user)
+                .newEmail(request.getNewEmail())
+                .expiryDate(LocalDateTime.now().plusMinutes(30))
+                .build();
+
+        emailChangeTokenRepository.save(changeToken);
+        mailService.sendEmailChangeEmail(user.getEmail(), token);
+    }
+
+    @Override
+    public void requestEmailChangeConfirmation(String token) {
+        EmailChangeToken confirmationToken = emailChangeTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("invalid email change token"));
+        mailService.sendEmailChangeConfirmation(confirmationToken.getNewEmail(), confirmationToken.getToken());
+    }
+
+    @Override
+    public void confirmEmailChange(String token) {
+        EmailChangeToken confirmationToken = emailChangeTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("invalid email change token"));
+        User user = confirmationToken.getUser();
+
+        user.setEmail(confirmationToken.getNewEmail());
+        userRepository.save(user);
+        emailChangeTokenRepository.delete(confirmationToken);
     }
 
     private UserDTO mapToDTO(User user) {
