@@ -106,10 +106,8 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("This account has already been verified");
         }
 
-        verificationTokenRepository.findAll()
-                .stream()
-                .filter(t -> t.getUser().equals(user))
-                .forEach(verificationTokenRepository::delete);
+        verificationTokenRepository.findByUser(user)
+                .ifPresent(verificationTokenRepository::delete);
 
         String newToken = UUID.randomUUID().toString();
         VerificationToken verificationToken = VerificationToken.builder()
@@ -127,8 +125,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Optional<PasswordResetToken> oldToken = passwordResetTokenRepository.findByUser(user);
-        oldToken.ifPresent(passwordResetTokenRepository::delete);
+        passwordResetTokenRepository.findByUser(user)
+                .ifPresent(passwordResetTokenRepository::delete);
 
         String token = UUID.randomUUID().toString();
         PasswordResetToken resetToken = PasswordResetToken.builder()
@@ -159,9 +157,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void requestEmailChange(String jwtToken, EmailChangeRequest request) {
+        if (userRepository.findByEmail(request.getNewEmail()).isPresent()) {
+            throw new RuntimeException("Email is already in use");
+        }
+
         String cleanToken = jwtToken.replace("Bearer ", "");
         String email = jwtProvider.extractEmailFromToken(cleanToken);
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
