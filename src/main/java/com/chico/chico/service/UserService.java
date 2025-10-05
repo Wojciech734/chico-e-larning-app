@@ -14,7 +14,7 @@ public interface UserService {
     void resendVerificationEmail(String email);
     void forgotPassword(String email);
     void resetPassword(String token, String newPassword);
-    void requestEmailChange(EmailChangeRequest request);
+    void requestEmailChange(String jwtToken,EmailChangeRequest request);
     void requestEmailChangeConfirmation(String token);
     void confirmEmailChange(String token);
 }

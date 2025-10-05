@@ -158,8 +158,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void requestEmailChange(EmailChangeRequest request) {
-        String email = jwtProvider.extractEmailFromToken(request.getJwtToken());
+    public void requestEmailChange(String jwtToken, EmailChangeRequest request) {
+        String cleanToken = jwtToken.replace("Bearer ", "");
+        String email = jwtProvider.extractEmailFromToken(cleanToken);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));

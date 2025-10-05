@@ -33,13 +33,13 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification-email")
-    public ResponseEntity<String> resendVerificationEmail(@RequestBody EmailRequest request) {
+    public ResponseEntity<String> resendVerificationEmail(@RequestBody EmailVerificationRequest request) {
         userService.resendVerificationEmail(request.getEmail());
         return ResponseEntity.ok("New verification link has been send to your email");
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody EmailRequest request) {
+    public ResponseEntity<String> forgotPassword(@RequestBody EmailVerificationRequest request) {
         userService.forgotPassword(request.getEmail());
         return ResponseEntity.ok("Password reset link has been sent to your email");
     }
@@ -48,5 +48,25 @@ public class AuthController {
     public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestBody ResetPasswordRequest request) {
         userService.resetPassword(token, request.getNewPassword());
         return ResponseEntity.ok("Password has been reset successfully");
+    }
+
+    @PostMapping("/request-email-change")
+    public ResponseEntity<String> requestEmailChange(
+            @RequestHeader("Authorization") String jwtToken,
+            @RequestBody EmailChangeRequest request) {
+        userService.requestEmailChange(jwtToken, request);
+        return ResponseEntity.ok("Email change link has been sent to your email");
+    }
+
+    @GetMapping("/change-email")
+    public ResponseEntity<String> confirmEmailChangeRequest(@RequestParam String token) {
+        userService.requestEmailChangeConfirmation(token);
+        return ResponseEntity.ok("A confirmation link has been sent to your new email address");
+    }
+
+    @PostMapping("/change-email-confirmation")
+    public ResponseEntity<String> confirmEmailChange(@RequestParam String token) {
+        userService.confirmEmailChange(token);
+        return ResponseEntity.ok("Your email address has been updated successfully");
     }
 }

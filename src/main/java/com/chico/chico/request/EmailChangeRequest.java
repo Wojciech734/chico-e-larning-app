@@ -10,7 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EmailChangeRequest {
     @NotBlank
-    private String jwtToken;
-    @NotBlank
     private String newEmail;
 }
