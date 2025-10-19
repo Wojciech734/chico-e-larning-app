@@ -6,15 +6,15 @@
   - Login/Register with **JWT** or **OAuth2** (Google/Facebook)
   - Email verification + password/email reset
   - Role system:
-    - User chooses **Teacher** or **Student** role during registation
+    - User chooses **Teacher** or **Student** role during registration
     - Roles can be changed later in profile settings
-    - Teachers automaticlly also have the **Student** role
+    - Teachers automatically also have the **Student** role
   - Private/Public teacher profiles:
-    - If a teacher makes their profile private, all their courses alre also hidden
+    - If a teacher makes their profile private, all their courses are also hidden
 
 - **User Profile**
   - Avatar image and personal description
-  - Public teacher profiles (if enabled) show thier courses and reviews
+  - Public teacher profiles (if enabled) show their courses and reviews
 
 - **Courses & Lessons**
   - Teachers can create, edit and remove courses
@@ -32,10 +32,10 @@
   - Each student can review a course only once
 
 - **Dashboard**
-  - Studenmts see progress in enrolled courses (e.g. "Lessons completed: 4/10")
+  - Students see progress in enrolled courses (e.g. "Lessons completed: 4/10")
   - Teachers see:
     - Number of enrolled students
-    - Avrage course review
+    - Average course review
 
 - **Achievements**
   - Gamification system (e.g. *"Complete your first 10 courses"*)
