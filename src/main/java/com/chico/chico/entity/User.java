@@ -37,6 +37,11 @@ public class User {
 
     private String avatarImage;
 
+    @Column(length = 1000)
+    private String bio;
+
+    private boolean publicProfile = true;
+
     private String provider;
     private String providerId;
 

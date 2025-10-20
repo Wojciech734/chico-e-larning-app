@@ -183,19 +183,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public void requestEmailChangeConfirmation(String token) {
         EmailChangeToken confirmationToken = emailChangeTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("invalid email change token"));
+                .orElseThrow(() -> new RuntimeException("Invalid email change token"));
         mailService.sendEmailChangeConfirmation(confirmationToken.getNewEmail(), confirmationToken.getToken());
     }
 
     @Override
     public void confirmEmailChange(String token) {
         EmailChangeToken confirmationToken = emailChangeTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("invalid email change token"));
+                .orElseThrow(() -> new RuntimeException("Invalid email change token"));
         User user = confirmationToken.getUser();
 
         user.setEmail(confirmationToken.getNewEmail());
         userRepository.save(user);
         emailChangeTokenRepository.delete(confirmationToken);
+    }
+
+    @Override
+    public UserDTO getTeacherProfile(Long teacherId) {
+        User teacher = userRepository.findById(teacherId)
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+        if (!teacher.isPublicProfile()) {
+            throw new RuntimeException("This teacher profile is private");
+        }
+        return mapToDTO(teacher);
     }
 
     private UserDTO mapToDTO(User user) {
@@ -205,6 +215,8 @@ public class UserServiceImpl implements UserService {
                 user.getLastName(),
                 user.getEmail(),
                 user.getAvatarImage(),
+                user.getBio(),
+                user.isPublicProfile(),
                 user.getRoles(),
                 user.getCreatedAt(),
                 user.isEnabled()

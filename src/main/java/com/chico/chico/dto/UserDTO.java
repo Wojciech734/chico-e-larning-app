@@ -19,6 +19,8 @@ public class UserDTO {
     private String lastName;
     private String email;
     private String avatarImage;
+    private String bio;
+    private boolean isPublicProfile;
     private Set<Role> roles;
     private LocalDateTime createdAt;
     private boolean isEnabled;

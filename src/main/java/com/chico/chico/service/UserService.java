@@ -1,5 +1,6 @@
 package com.chico.chico.service;
 
+import com.chico.chico.dto.UserDTO;
 import com.chico.chico.entity.User;
 import com.chico.chico.request.EmailChangeRequest;
 import com.chico.chico.request.LoginRequest;
@@ -17,4 +18,5 @@ public interface UserService {
     void requestEmailChange(String jwtToken,EmailChangeRequest request);
     void requestEmailChangeConfirmation(String token);
     void confirmEmailChange(String token);
+    UserDTO getTeacherProfile(Long teacherId);
 }
