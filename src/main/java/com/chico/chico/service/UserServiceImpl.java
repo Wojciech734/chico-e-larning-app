@@ -1,10 +1,7 @@
 package com.chico.chico.service;
 
 import com.chico.chico.dto.UserDTO;
-import com.chico.chico.entity.EmailChangeToken;
-import com.chico.chico.entity.PasswordResetToken;
-import com.chico.chico.entity.User;
-import com.chico.chico.entity.VerificationToken;
+import com.chico.chico.entity.*;
 import com.chico.chico.repository.EmailChangeTokenRepository;
 import com.chico.chico.repository.PasswordResetTokenRepository;
 import com.chico.chico.repository.UserRepository;
@@ -202,8 +199,8 @@ public class UserServiceImpl implements UserService {
     public UserDTO getTeacherProfile(Long teacherId) {
         User teacher = userRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
-        if (!teacher.isPublicProfile()) {
-            throw new RuntimeException("This teacher profile is private");
+        if (!teacher.isPublicProfile() || !teacher.getRoles().contains(Role.TEACHER)) {
+            throw new RuntimeException("This teacher profile is private or it's not teacher profile");
         }
         return mapToDTO(teacher);
     }
