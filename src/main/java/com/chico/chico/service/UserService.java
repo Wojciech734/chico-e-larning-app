@@ -1,7 +1,6 @@
 package com.chico.chico.service;
 
 import com.chico.chico.dto.UserDTO;
-import com.chico.chico.entity.User;
 import com.chico.chico.request.EmailChangeRequest;
 import com.chico.chico.request.LoginRequest;
 import com.chico.chico.request.RegisterRequest;
