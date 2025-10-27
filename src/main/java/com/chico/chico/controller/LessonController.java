@@ -3,29 +3,25 @@ package com.chico.chico.controller;
 import com.chico.chico.dto.LessonDTO;
 import com.chico.chico.entity.Lesson;
 import com.chico.chico.service.LessonService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/lessons")
 public class LessonController {
 
-    private LessonService lessonService;
+    private final LessonService lessonService;
 
-    @PostMapping("/add-lesson/{courseId}")
+    @PostMapping("/course/{courseId}")
     public LessonDTO addLesson(
             @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long courseId,
             @RequestBody Lesson lesson
     ) {
         return lessonService.addLesson(jwtToken, courseId, lesson);
-    }
-
-    @GetMapping("/{courseId}")
-    public List<LessonDTO> getAllLessons(@PathVariable Long courseId) {
-        return lessonService.getAllLessons(courseId);
     }
 
     @PutMapping("/lesson/{lessonId}")

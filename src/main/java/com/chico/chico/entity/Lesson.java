@@ -1,15 +1,16 @@
 package com.chico.chico.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Data
-@Table(name = "lessons")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "course")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Table(name = "lessons")
 public class Lesson {
 
     @Id

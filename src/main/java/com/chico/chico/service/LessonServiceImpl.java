@@ -18,10 +18,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LessonServiceImpl implements LessonService {
 
-    private UserRepository userRepository;
-    private LessonRepository lessonRepository;
-    private CourseRepository courseRepository;
-    private JwtProvider jwtProvider;
+    private final UserRepository userRepository;
+    private final LessonRepository lessonRepository;
+    private final CourseRepository courseRepository;
+    private final JwtProvider jwtProvider;
 
     @Override
     public LessonDTO addLesson(String jwtToken, Long courseId, Lesson lesson) {
@@ -41,6 +41,7 @@ public class LessonServiceImpl implements LessonService {
             throw new RuntimeException("Only teachers can add lessons");
         }
 
+        lesson.setCourse(course);
         return mapToDTO(lessonRepository.save(lesson));
     }
 

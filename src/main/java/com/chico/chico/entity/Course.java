@@ -1,19 +1,20 @@
 package com.chico.chico.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Data
-@Table(name = "courses")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"teacher", "lessons", "enrollments", "category"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Table(name = "courses")
 public class Course {
 
     @Id

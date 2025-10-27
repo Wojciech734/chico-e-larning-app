@@ -1,8 +1,10 @@
 package com.chico.chico.controller;
 
+import com.chico.chico.dto.LessonDTO;
 import com.chico.chico.entity.Course;
 import com.chico.chico.dto.CourseDTO;
 import com.chico.chico.service.CourseService;
+import com.chico.chico.service.LessonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import java.util.List;
 public class CourseController {
 
     private final CourseService courseService;
+    private final LessonService lessonService;
 
     @PostMapping("/create-course")
     public CourseDTO createCourse(
@@ -50,5 +53,10 @@ public class CourseController {
             @RequestBody Course updatedCourse
     ) {
         return courseService.editCourse(jwtToken, id, updatedCourse);
+    }
+
+    @GetMapping("/course/{courseId}/lessons")
+    public List<LessonDTO> getAllLessons(@PathVariable Long courseId) {
+        return lessonService.getAllLessons(courseId);
     }
 }
