@@ -157,8 +157,7 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Email is already in use");
         }
 
-        String cleanToken = jwtToken.replace("Bearer ", "");
-        String email = jwtProvider.extractEmailFromToken(cleanToken);
+        String email = jwtProvider.extractEmailFromToken(jwtToken);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

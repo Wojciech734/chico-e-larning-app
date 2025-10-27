@@ -1,7 +1,7 @@
 package com.chico.chico.controller;
 
 import com.chico.chico.entity.Course;
-import com.chico.chico.response.CourseResponse;
+import com.chico.chico.dto.CourseDTO;
 import com.chico.chico.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ public class CourseController {
     private final CourseService courseService;
 
     @PostMapping("/create-course")
-    public CourseResponse createCourse(
+    public CourseDTO createCourse(
             @RequestHeader("Authorization") String jwtToken,
             @RequestBody Course course
     ) {
@@ -25,7 +25,7 @@ public class CourseController {
     }
 
     @GetMapping("/course/{id}")
-    public CourseResponse getCourseById(@PathVariable Long id) {
+    public CourseDTO getCourseById(@PathVariable Long id) {
         return courseService.getCourseById(id);
     }
 
@@ -39,7 +39,16 @@ public class CourseController {
     }
 
     @GetMapping
-    public List<Course> getCoursesByCategoryName(@RequestBody String name) {
+    public List<CourseDTO> getCoursesByCategoryName(@RequestParam String name) {
         return courseService.getCoursesByCategory(name);
+    }
+
+    @PutMapping("/course/{id}")
+    public CourseDTO editCourse(
+            @RequestHeader("Authorization") String jwtToken,
+            @PathVariable Long id,
+            @RequestBody Course updatedCourse
+    ) {
+        return courseService.editCourse(jwtToken, id, updatedCourse);
     }
 }

@@ -35,8 +35,9 @@ public class JwtProvider {
 
     public String extractEmailFromToken(String token) {
         if (token == null || token.isEmpty()) return null;
+        String cleanToken = token.replace("Bearer ", "");
         try {
-            return extractClaimsFromToken(token, Claims::getSubject);
+            return extractClaimsFromToken(cleanToken, Claims::getSubject);
         } catch (Exception e) {
             return e.getMessage();
         }

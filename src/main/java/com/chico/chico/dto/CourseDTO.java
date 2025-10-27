@@ -1,7 +1,5 @@
-package com.chico.chico.response;
+package com.chico.chico.dto;
 
-import com.chico.chico.dto.UserDTO;
-import com.chico.chico.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CourseResponse {
+public class CourseDTO {
 
     private Long id;
     private String title;
@@ -19,4 +17,8 @@ public class CourseResponse {
     private String image;
     private LocalDateTime createdAt;
     private String teacherName;
+    private String categoryName;
+    private int lessonsCount;
+    private double averageRating;
+    private int studentsCompleted;
 }
