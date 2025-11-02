@@ -1,18 +1,19 @@
 package com.chico.chico.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString(exclude = {"student", "course"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(
         name = "enrollments",
         uniqueConstraints = @UniqueConstraint(columnNames = {"student_id", "course_id"})

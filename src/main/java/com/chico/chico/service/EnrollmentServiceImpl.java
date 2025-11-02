@@ -1,7 +1,119 @@
 package com.chico.chico.service;
 
+import com.chico.chico.dto.EnrollmentDTO;
+import com.chico.chico.entity.*;
+import com.chico.chico.repository.CourseRepository;
+import com.chico.chico.repository.EnrollmentRepository;
+import com.chico.chico.repository.LessonRepository;
+import com.chico.chico.repository.UserRepository;
+import com.chico.chico.security.JwtProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class EnrollmentServiceImpl implements EnrollmentService {
+
+    private final EnrollmentRepository enrollmentRepository;
+    private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
+    private final LessonRepository lessonRepository;
+    private final JwtProvider jwtProvider;
+
+    @Override
+    public EnrollmentDTO enrollCourse(String jwtToken, Long courseId) {
+
+        String email = jwtProvider.extractEmailFromToken(jwtToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        if (enrollmentRepository.findEnrollmentByStudentIdAndCourseId(user.getId(), courseId).isPresent()) {
+            throw new RuntimeException("You've already enrolled in this course");
+        }
+
+        Enrollment enrollment = new Enrollment();
+
+        enrollment.setStudent(user);
+        enrollment.setCourse(course);
+        enrollment.setEnrolledAt(LocalDateTime.now());
+
+        return mapToDto(enrollmentRepository.save(enrollment));
+    }
+
+    @Override
+    public List<EnrollmentDTO> getUserEnrollments(String jwtToken) {
+        String email = jwtProvider.extractEmailFromToken(jwtToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return enrollmentRepository.findByStudentId(user.getId())
+                .stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+    @Override
+    public void markLessonAsCompleted(String jwtToken, Long lessonId) {
+        String email = jwtProvider.extractEmailFromToken(jwtToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("Lesson not found"));
+
+        Course course = lesson.getCourse();
+
+        Enrollment enrollment = enrollmentRepository.findEnrollmentByStudentIdAndCourseId(user.getId(), course.getId())
+                .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+
+        LessonProgress lessonProgresses = enrollment.getLessonProgresses()
+                .stream()
+                .filter(lessonProgress -> lessonProgress.getLesson().equals(lesson))
+                .findFirst()
+                .orElseGet(() -> {
+                    LessonProgress newLessonProgress = new LessonProgress();
+                    newLessonProgress.setEnrollment(enrollment);
+                    newLessonProgress.setLesson(lesson);
+                    enrollment.getLessonProgresses().add(newLessonProgress);
+                    return newLessonProgress;
+                });
+        lessonProgresses.setCompleted(true);
+        lessonProgresses.setCompletedAt(LocalDateTime.now());
+
+        enrollment.calculateCurrentProgress();
+        enrollmentRepository.save(enrollment);
+    }
+
+    @Override
+    public void unEnrollFromCourse(String jwtToken, Long courseId) {
+        String email = jwtProvider.extractEmailFromToken(jwtToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        Enrollment enrollment = enrollmentRepository.findEnrollmentByStudentIdAndCourseId(user.getId(), courseId)
+                .orElseThrow(() -> new RuntimeException("enrollment not found"));
+
+        enrollmentRepository.delete(enrollment);
+    }
+
+    private EnrollmentDTO mapToDto(Enrollment enrollment) {
+        return new EnrollmentDTO(
+                enrollment.getId(),
+                enrollment.getStudent().getFirstName() + " " + enrollment.getStudent().getLastName(),
+                enrollment.getCourse().getTitle(),
+                enrollment.getLessonsCompleted(),
+                enrollment.isFinished(),
+                enrollment.getEnrolledAt(),
+                enrollment.getCompletedDate(),
+                enrollment.getProgressPercent()
+        );
+    }
 }
