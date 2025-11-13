@@ -3,6 +3,7 @@ package com.chico.chico.request;
 import com.chico.chico.entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,8 +24,8 @@ public class RegisterRequest {
     private String email;
     @NotBlank
     private String password;
-    @NotBlank
+    @NotNull
     private Set<Role> roles;
-    @NotBlank
+    @NotNull
     private LocalDateTime createdAt;
 }
