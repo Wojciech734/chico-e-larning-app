@@ -16,7 +16,7 @@ public class MailServiceImpl implements MailService {
     @Override
     public void sendVerificationEmail(String to, String token) {
         String subject = "Potwierdź swoje konto";
-        String confirmationUrl = "http://localhost:8080/api/auth/verify?token=" + token;
+        String confirmationUrl = "http://localhost:5173/verify?token=" + token;
         String content = """
                 <p>Witaj,</p>
                 <p>Dziękujemy za rejestrację. Kliknij w link, aby aktywować swoje konto:</p>

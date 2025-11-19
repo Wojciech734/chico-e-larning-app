@@ -2,6 +2,7 @@ package com.chico.chico.service;
 
 import com.chico.chico.dto.UserDTO;
 import com.chico.chico.entity.*;
+import com.chico.chico.exception.*;
 import com.chico.chico.repository.EmailChangeTokenRepository;
 import com.chico.chico.repository.PasswordResetTokenRepository;
 import com.chico.chico.repository.UserRepository;
@@ -34,7 +35,7 @@ public class UserServiceImpl implements UserService {
     public AuthResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email is already in use");
+            throw new EmailAlreadyInUseException("Email is already in use");
         }
 
         User user = new User();
@@ -64,14 +65,14 @@ public class UserServiceImpl implements UserService {
     public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("invalid password or email"));
+                .orElseThrow(() -> new InvalidPasswordOrEmailException("invalid password or email"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("invalid password or email");
+            throw new InvalidPasswordOrEmailException("invalid password or email");
         }
 
         if (!user.isEnabled()) {
-            throw new RuntimeException("Your account hasn't been activated yet");
+            throw new AccountVerificationException("Your account hasn't been activated yet");
         }
 
         String token = jwtProvider.generateToken(user.getEmail());
@@ -81,10 +82,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void verifyAccount(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("invalid verification token"));
+                .orElseThrow(() -> new InvalidTokenException("invalid verification token"));
 
         if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("The token has expired");
+            throw new InvalidTokenException("The token has expired");
         }
 
         User user = verificationToken.getUser();
@@ -96,10 +97,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void resendVerificationEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (user.isEnabled()) {
-            throw new RuntimeException("This account has already been verified");
+            throw new AccountVerificationException("This account has already been verified");
         }
 
         verificationTokenRepository.findByUser(user)
@@ -119,7 +120,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void forgotPassword(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         passwordResetTokenRepository.findByUser(user)
                 .ifPresent(passwordResetTokenRepository::delete);
@@ -138,10 +139,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void resetPassword(String token, String newPassword) {
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+                .orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
 
         if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Reset token has expired");
+            throw new InvalidTokenException("Reset token has expired");
         }
 
         User user = resetToken.getUser();
@@ -154,12 +155,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void requestEmailChange(String jwtToken, EmailChangeRequest request) {
         if (userRepository.findByEmail(request.getNewEmail()).isPresent()) {
-            throw new RuntimeException("Email is already in use");
+            throw new EmailAlreadyInUseException("Email is already in use");
         }
 
         String email = jwtProvider.extractEmailFromToken(jwtToken);
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         emailChangeTokenRepository.findByUser(user)
                 .ifPresent(emailChangeTokenRepository::delete);
@@ -179,14 +180,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public void requestEmailChangeConfirmation(String token) {
         EmailChangeToken confirmationToken = emailChangeTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid email change token"));
+                .orElseThrow(() -> new InvalidTokenException("Invalid email change token"));
         mailService.sendEmailChangeConfirmation(confirmationToken.getNewEmail(), confirmationToken.getToken());
     }
 
     @Override
     public void confirmEmailChange(String token) {
         EmailChangeToken confirmationToken = emailChangeTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid email change token"));
+                .orElseThrow(() -> new InvalidTokenException("Invalid email change token"));
         User user = confirmationToken.getUser();
 
         user.setEmail(confirmationToken.getNewEmail());
@@ -197,9 +198,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getTeacherProfile(Long teacherId) {
         User teacher = userRepository.findById(teacherId)
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+                .orElseThrow(() -> new UserNotFoundException("Teacher not found"));
         if (!teacher.isPublicProfile() || !teacher.getRoles().contains(Role.TEACHER)) {
-            throw new RuntimeException("This teacher profile is private or it's not teacher profile");
+            throw new TeacherProfileException("This teacher profile is private or it's not teacher profile");
         }
         return mapToDTO(teacher);
     }
