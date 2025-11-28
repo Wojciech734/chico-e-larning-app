@@ -5,11 +5,14 @@ import com.chico.chico.entity.Course;
 import com.chico.chico.entity.Lesson;
 import com.chico.chico.entity.Role;
 import com.chico.chico.entity.User;
+import com.chico.chico.exception.*;
 import com.chico.chico.repository.CourseRepository;
 import com.chico.chico.repository.LessonRepository;
 import com.chico.chico.repository.UserRepository;
 import com.chico.chico.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,21 +27,22 @@ public class LessonServiceImpl implements LessonService {
     private final JwtProvider jwtProvider;
 
     @Override
-    public LessonDTO addLesson(String jwtToken, Long courseId, Lesson lesson) {
-        String email = jwtProvider.extractEmailFromToken(jwtToken);
+    public LessonDTO addLesson(Long courseId, Lesson lesson) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new CourseNotFoundException("Course not found"));
 
         if (!course.getTeacher().equals(user)) {
-            throw new RuntimeException("Only teachers can add, delete and edit lessons");
+            throw new UserIsNotATeacherException("Only teachers can add, delete and edit lessons");
         }
 
         if (!user.getRoles().contains(Role.TEACHER)) {
-            throw new RuntimeException("Only teachers can add lessons");
+            throw new UserIsNotATeacherException("Only teachers can add lessons");
         }
 
         lesson.setCourse(course);
@@ -54,22 +58,23 @@ public class LessonServiceImpl implements LessonService {
     }
 
     @Override
-    public LessonDTO editLesson(String jwtToken, Long lessonId, Lesson updatedLesson) {
+    public LessonDTO editLesson(Long lessonId, Lesson updatedLesson) {
 
-        String email = jwtProvider.extractEmailFromToken(jwtToken);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new RuntimeException("Lesson not found"));
+                .orElseThrow(() -> new LessonNotFoundException("Lesson not found"));
 
         if (!lesson.getCourse().getTeacher().equals(user)) {
-            throw new RuntimeException("You can only edit your onw lessons and courses");
+            throw new NotTheOwnerException("You can only edit your onw lessons and courses");
         }
 
         if (!user.getRoles().contains(Role.TEACHER)) {
-            throw new RuntimeException("Only teachers can add, delete and edit lessons");
+            throw new UserIsNotATeacherException("Only teachers can add, delete and edit lessons");
         }
 
         if (updatedLesson.getTitle() != null) {
@@ -96,21 +101,22 @@ public class LessonServiceImpl implements LessonService {
     }
 
     @Override
-    public void deleteLesson(String jwtToken, Long lessonId) {
-        String email = jwtProvider.extractEmailFromToken(jwtToken);
+    public void deleteLesson(Long lessonId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new RuntimeException("Lesson not found"));
+                .orElseThrow(() -> new LessonNotFoundException("Lesson not found"));
 
         if (!lesson.getCourse().getTeacher().equals(user)) {
-            throw new RuntimeException("You can only delete your own lessons");
+            throw new NotTheOwnerException("You can only delete your own lessons");
         }
 
         if (!user.getRoles().contains(Role.TEACHER)) {
-            throw new RuntimeException("Only teachers can add, delete and edit lessons");
+            throw new UserIsNotATeacherException("Only teachers can add, delete and edit lessons");
         }
 
         lessonRepository.delete(lesson);

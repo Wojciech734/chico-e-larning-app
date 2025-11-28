@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface EnrollmentService {
 
-    EnrollmentDTO enrollCourse(String jwtToken, Long courseId);
-    List<EnrollmentDTO> getUserEnrollments(String jwtToken);
-    void markLessonAsCompleted(String jwtToken, Long lessonId);
-    void unEnrollFromCourse(String jwtToken, Long courseId);
+    EnrollmentDTO enrollCourse(Long courseId);
+    List<EnrollmentDTO> getUserEnrollments();
+    void markLessonAsCompleted(Long lessonId);
+    void unEnrollFromCourse(Long courseId);
 }

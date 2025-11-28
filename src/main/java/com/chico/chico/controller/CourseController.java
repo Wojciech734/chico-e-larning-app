@@ -21,10 +21,9 @@ public class CourseController {
 
     @PostMapping("/create-course")
     public CourseDTO createCourse(
-            @RequestHeader("Authorization") String jwtToken,
             @RequestBody Course course
     ) {
-        return courseService.createCourse(jwtToken, course);
+        return courseService.createCourse(course);
     }
 
     @GetMapping("/course/{id}")
@@ -34,10 +33,9 @@ public class CourseController {
 
     @DeleteMapping("/course/{id}")
     public ResponseEntity<String> deleteCourse(
-            @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long id
     ) {
-        courseService.deleteCourse(jwtToken, id);
+        courseService.deleteCourse(id);
         return ResponseEntity.ok("Successfully deleted course");
     }
 
@@ -48,11 +46,10 @@ public class CourseController {
 
     @PutMapping("/course/{id}")
     public CourseDTO editCourse(
-            @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long id,
             @RequestBody Course updatedCourse
     ) {
-        return courseService.editCourse(jwtToken, id, updatedCourse);
+        return courseService.editCourse(id, updatedCourse);
     }
 
     @GetMapping("/course/{courseId}/lessons")

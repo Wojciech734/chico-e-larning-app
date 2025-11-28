@@ -18,34 +18,29 @@ public class EnrollmentController {
 
     @PostMapping("/course/{courseId}")
     public EnrollmentDTO enrollCourse(
-            @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long courseId
     ) {
-        return enrollmentService.enrollCourse(jwtToken, courseId);
+        return enrollmentService.enrollCourse(courseId);
     }
 
     @GetMapping
-    public List<EnrollmentDTO> getUserEnrollments(
-            @RequestHeader("Authorization") String jwtToken
-    ) {
-        return enrollmentService.getUserEnrollments(jwtToken);
+    public List<EnrollmentDTO> getUserEnrollments() {
+        return enrollmentService.getUserEnrollments();
     }
 
     @PostMapping("/complete/lesson/{lessonId}")
     public ResponseEntity<String> markLessonAsCompleted(
-            @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long lessonId
     ) {
-        enrollmentService.markLessonAsCompleted(jwtToken, lessonId);
+        enrollmentService.markLessonAsCompleted(lessonId);
         return ResponseEntity.ok("successfully marked as completed");
     }
 
     @DeleteMapping("/course/{courseId}")
     public ResponseEntity<String> unEnrollFromCourse(
-            @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long courseId
     ) {
-        enrollmentService.unEnrollFromCourse(jwtToken, courseId);
+        enrollmentService.unEnrollFromCourse(courseId);
         return ResponseEntity.ok("successfully un enrolled from course");
     }
 }

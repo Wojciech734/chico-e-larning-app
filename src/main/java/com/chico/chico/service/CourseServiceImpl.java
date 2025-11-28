@@ -3,12 +3,18 @@ package com.chico.chico.service;
 import com.chico.chico.entity.Course;
 import com.chico.chico.entity.Role;
 import com.chico.chico.entity.User;
+import com.chico.chico.exception.CourseNotFoundException;
+import com.chico.chico.exception.NotTheOwnerException;
+import com.chico.chico.exception.UserIsNotATeacherException;
+import com.chico.chico.exception.UserNotFoundException;
 import com.chico.chico.repository.CourseRepository;
 import com.chico.chico.repository.LessonRepository;
 import com.chico.chico.repository.UserRepository;
 import com.chico.chico.dto.CourseDTO;
 import com.chico.chico.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,15 +29,17 @@ public class CourseServiceImpl implements CourseService {
     private final JwtProvider jwtProvider;
 
     @Override
-    public CourseDTO createCourse(String jwtToken, Course course) {
+    public CourseDTO createCourse(Course course) {
 
-        String email = jwtProvider.extractEmailFromToken(jwtToken);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
 
         User teacher = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (!teacher.getRoles().contains(Role.TEACHER)) {
-            throw new RuntimeException("No permissions to create courses, you're not a teacher");
+            throw new UserIsNotATeacherException("No permissions to create courses, you're not a teacher");
         }
 
         course.setTeacher(teacher);
@@ -40,22 +48,24 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public void deleteCourse(String jwtToken, Long id) {
+    public void deleteCourse(Long id) {
 
-        String email = jwtProvider.extractEmailFromToken(jwtToken);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new CourseNotFoundException("User not found"));
 
         Course course = courseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new CourseNotFoundException("Course not found"));
 
         if (!course.getTeacher().equals(user)) {
-            throw new RuntimeException("You can only delete your own courses");
+            throw new NotTheOwnerException("You can only delete your own courses");
         }
 
         if (!user.getRoles().contains(Role.TEACHER)) {
-            throw new RuntimeException("Only teachers can delete courses");
+            throw new UserIsNotATeacherException("Only teachers can delete courses");
         }
 
         courseRepository.delete(course);
@@ -63,7 +73,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseDTO getCourseById(Long id) {
-        Course course = courseRepository.findById(id).orElseThrow(() -> new RuntimeException("Course not found"));
+        Course course = courseRepository.findById(id).orElseThrow(() -> new CourseNotFoundException("Course not found"));
         return mapToDTO(course);
     }
 
@@ -74,22 +84,24 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseDTO editCourse(String jwtToken, Long courseId, Course updatedCourse) {
+    public CourseDTO editCourse(Long courseId, Course updatedCourse) {
 
-        String email = jwtProvider.extractEmailFromToken(jwtToken);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new CourseNotFoundException("User not found"));
 
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new CourseNotFoundException("Course not found"));
 
         if (!course.getTeacher().equals(user)) {
-            throw new RuntimeException("You can only edit your own courses");
+            throw new NotTheOwnerException("You can only edit your own courses");
         }
 
         if (!user.getRoles().contains(Role.TEACHER)) {
-            throw new RuntimeException("Only teachers can edit courses");
+            throw new UserIsNotATeacherException("Only teachers can edit courses");
         }
 
         if (updatedCourse.getCategory() != null) {

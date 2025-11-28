@@ -8,9 +8,9 @@ import java.util.List;
 public interface ReviewService {
     List<ReviewDTO> getAllCourseReviews(Long courseId);
 
-    ReviewDTO addReview(String jwtToken, Review review, Long courseId);
+    ReviewDTO addReview(Review review, Long courseId);
 
-    ReviewDTO editReview(String jwtToken, Review newReview, Long reviewId);
+    ReviewDTO editReview(Review newReview, Long reviewId);
 
-    void deleteReview(String jwtToken, Long reviewId);
+    void deleteReview(Long reviewId);
 }

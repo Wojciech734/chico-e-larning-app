@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface LessonService {
 
-    LessonDTO addLesson(String jwtToken, Long courseId, Lesson lesson);
+    LessonDTO addLesson(Long courseId, Lesson lesson);
 
     List<LessonDTO> getAllLessons(Long courseId);
 
-    LessonDTO editLesson(String jwtToken, Long lessonId, Lesson updatedLesson);
+    LessonDTO editLesson(Long lessonId, Lesson updatedLesson);
 
-    void deleteLesson(String jwtToken, Long lessonId);
+    void deleteLesson(Long lessonId);
 }

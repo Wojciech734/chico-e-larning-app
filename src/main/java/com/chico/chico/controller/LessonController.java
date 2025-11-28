@@ -17,28 +17,25 @@ public class LessonController {
 
     @PostMapping("/course/{courseId}")
     public LessonDTO addLesson(
-            @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long courseId,
             @RequestBody Lesson lesson
     ) {
-        return lessonService.addLesson(jwtToken, courseId, lesson);
+        return lessonService.addLesson(courseId, lesson);
     }
 
     @PutMapping("/lesson/{lessonId}")
     public LessonDTO editLesson(
-            @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long lessonId,
             @RequestBody Lesson updatedlesson
     ) {
-        return lessonService.editLesson(jwtToken, lessonId, updatedlesson);
+        return lessonService.editLesson(lessonId, updatedlesson);
     }
 
     @DeleteMapping("/lesson/{lessonId}")
     public ResponseEntity<String> deleteLesson(
-            @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long lessonId
     ) {
-        lessonService.deleteLesson(jwtToken, lessonId);
+        lessonService.deleteLesson(lessonId);
         return ResponseEntity.ok("Lesson's been deleted successfully");
     }
 }

@@ -2,12 +2,15 @@ package com.chico.chico.service;
 
 import com.chico.chico.dto.EnrollmentDTO;
 import com.chico.chico.entity.*;
+import com.chico.chico.exception.*;
 import com.chico.chico.repository.CourseRepository;
 import com.chico.chico.repository.EnrollmentRepository;
 import com.chico.chico.repository.LessonRepository;
 import com.chico.chico.repository.UserRepository;
 import com.chico.chico.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,17 +27,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final JwtProvider jwtProvider;
 
     @Override
-    public EnrollmentDTO enrollCourse(String jwtToken, Long courseId) {
+    public EnrollmentDTO enrollCourse(Long courseId) {
 
-        String email = jwtProvider.extractEmailFromToken(jwtToken);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new CourseNotFoundException("Course not found"));
 
         if (enrollmentRepository.findEnrollmentByStudentIdAndCourseId(user.getId(), courseId).isPresent()) {
-            throw new RuntimeException("You've already enrolled in this course");
+            throw new AlreadyEnrolledInException("You've already enrolled in this course");
         }
 
         Enrollment enrollment = new Enrollment();
@@ -47,10 +52,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public List<EnrollmentDTO> getUserEnrollments(String jwtToken) {
-        String email = jwtProvider.extractEmailFromToken(jwtToken);
+    public List<EnrollmentDTO> getUserEnrollments() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         return enrollmentRepository.findByStudentId(user.getId())
                 .stream()
                 .map(this::mapToDto)
@@ -58,18 +64,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public void markLessonAsCompleted(String jwtToken, Long lessonId) {
-        String email = jwtProvider.extractEmailFromToken(jwtToken);
+    public void markLessonAsCompleted(Long lessonId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Lesson lesson = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new RuntimeException("Lesson not found"));
+                .orElseThrow(() -> new LessonNotFoundException("Lesson not found"));
 
         Course course = lesson.getCourse();
 
         Enrollment enrollment = enrollmentRepository.findEnrollmentByStudentIdAndCourseId(user.getId(), course.getId())
-                .orElseThrow(() -> new RuntimeException("Enrollment not found"));
+                .orElseThrow(() -> new EnrollmentNotFoundException("Enrollment not found"));
 
         LessonProgress lessonProgresses = enrollment.getLessonProgresses()
                 .stream()
@@ -90,16 +97,17 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public void unEnrollFromCourse(String jwtToken, Long courseId) {
-        String email = jwtProvider.extractEmailFromToken(jwtToken);
+    public void unEnrollFromCourse(Long courseId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found"));
+                .orElseThrow(() -> new CourseNotFoundException("Course not found"));
 
         Enrollment enrollment = enrollmentRepository.findEnrollmentByStudentIdAndCourseId(user.getId(), courseId)
-                .orElseThrow(() -> new RuntimeException("enrollment not found"));
+                .orElseThrow(() -> new EnrollmentNotFoundException("enrollment not found"));
 
         enrollmentRepository.delete(enrollment);
     }

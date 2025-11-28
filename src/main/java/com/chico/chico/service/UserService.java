@@ -18,4 +18,5 @@ public interface UserService {
     void requestEmailChangeConfirmation(String token);
     void confirmEmailChange(String token);
     UserDTO getTeacherProfile(Long teacherId);
+    UserDTO getCurrentUser();
 }

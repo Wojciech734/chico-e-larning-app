@@ -10,11 +10,16 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/teacher/{id}")
     public UserDTO getTeacherProfile(@PathVariable Long id) {
         return userService.getTeacherProfile(id);
     }
 
+
+    @GetMapping("/me")
+    public UserDTO getCurrentUser() {
+        return userService.getCurrentUser();
+    }
 }

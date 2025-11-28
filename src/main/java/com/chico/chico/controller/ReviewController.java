@@ -19,7 +19,6 @@ public class ReviewController {
 
     @GetMapping("/course/{courseId}")
     public List<ReviewDTO> getAllCourseReviews(
-            @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long courseId
     ) {
         return reviewService.getAllCourseReviews(courseId);
@@ -27,28 +26,25 @@ public class ReviewController {
 
     @PostMapping("/course/{courseId}")
     public ReviewDTO addReview(
-            @RequestHeader("Authorization") String jwtToken,
             @RequestBody Review review,
             @PathVariable Long courseId
     ) {
-        return reviewService.addReview(jwtToken, review, courseId);
+        return reviewService.addReview(review, courseId);
     }
 
     @PutMapping("/review/{reviewId}")
     public ReviewDTO editReview(
-            @RequestHeader("Authorization") String jwtToken,
             @RequestBody Review newReview,
             @PathVariable Long reviewId
     ) {
-        return reviewService.editReview(jwtToken, newReview, reviewId);
+        return reviewService.editReview(newReview, reviewId);
     }
 
     @DeleteMapping("/review/{reviewId}")
     public ResponseEntity<String> deleteReview(
-            @RequestHeader("Authorization") String jwtToken,
             @PathVariable Long reviewId
     ) {
-        reviewService.deleteReview(jwtToken, reviewId);
+        reviewService.deleteReview(reviewId);
         return ResponseEntity.ok("successfully deleted review");
     }
 }

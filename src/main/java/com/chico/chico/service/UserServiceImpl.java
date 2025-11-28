@@ -13,6 +13,8 @@ import com.chico.chico.request.RegisterRequest;
 import com.chico.chico.response.AuthResponse;
 import com.chico.chico.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -203,6 +205,23 @@ public class UserServiceImpl implements UserService {
             throw new TeacherProfileException("This teacher profile is private or it's not teacher profile");
         }
         return mapToDTO(teacher);
+    }
+
+    @Override
+    public UserDTO getCurrentUser() {
+
+        // Using Spring Security context to retrieve authenticated user
+        // instead of manually parsing JWT token from request header.
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+//        String email = jwtProvider.extractEmailFromToken(token);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return mapToDTO(user);
     }
 
     private UserDTO mapToDTO(User user) {
