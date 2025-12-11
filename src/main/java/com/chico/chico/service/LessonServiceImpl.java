@@ -9,6 +9,7 @@ import com.chico.chico.exception.*;
 import com.chico.chico.repository.CourseRepository;
 import com.chico.chico.repository.LessonRepository;
 import com.chico.chico.repository.UserRepository;
+import com.chico.chico.request.ReorderLessonsRequest;
 import com.chico.chico.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +54,7 @@ public class LessonServiceImpl implements LessonService {
 
     @Override
     public List<LessonDTO> getAllLessons(Long courseId) {
-        List<Lesson> lessons = lessonRepository.findByCourseIdOrderByNumberAsc(courseId);
+        List<Lesson> lessons = lessonRepository.findByCourseIdOrderByOrderNumberAsc(courseId);
         return lessons.stream()
                 .map(this::mapToDTO)
                 .toList();
@@ -81,8 +84,8 @@ public class LessonServiceImpl implements LessonService {
             lesson.setTitle(updatedLesson.getTitle());
         }
 
-        if (updatedLesson.getNumber() != null) {
-            lesson.setNumber(updatedLesson.getNumber());
+        if (updatedLesson.getOrderNumber() != null) {
+            lesson.setOrderNumber(updatedLesson.getOrderNumber());
         }
 
         if (updatedLesson.getPdfUrl() != null) {
@@ -122,12 +125,49 @@ public class LessonServiceImpl implements LessonService {
         lessonRepository.delete(lesson);
     }
 
+    /*
+    *  Reorders lessons based on the provided list of lessons IDs.
+    * Only the course owner can reorder lessons.
+    * */
+    @Override
+    public void reorderLessons(Long courseId, ReorderLessonsRequest request) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+        if (!course.getTeacher().equals(user)) {
+            throw new NotTheOwnerException("You're not the owner of this course");
+        }
+
+        List<Lesson> lessons = lessonRepository
+                .findByCourseIdOrderByOrderNumberAsc(courseId);
+
+        Map<Long, Lesson> map = lessons.stream()
+                .collect(Collectors.toMap(Lesson::getId, l -> l));
+
+        int index = 1;
+        for (Long id : request.getLessonIds()) {
+            Lesson lesson = map.get(id);
+            if (lesson != null) {
+                lesson.setOrderNumber(index++);
+            }
+        }
+
+        lessonRepository.saveAll(lessons);
+    }
+
     private LessonDTO mapToDTO(Lesson lesson) {
         return new LessonDTO(
                 lesson.getId(),
                 lesson.getTitle(),
                 lesson.getVideoUrl(),
-                lesson.getNumber(),
+                lesson.getOrderNumber(),
                 lesson.getContent(),
                 lesson.getPdfUrl(),
                 lesson.getCourse().getTitle()

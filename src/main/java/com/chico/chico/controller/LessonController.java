@@ -2,6 +2,7 @@ package com.chico.chico.controller;
 
 import com.chico.chico.dto.LessonDTO;
 import com.chico.chico.entity.Lesson;
+import com.chico.chico.request.ReorderLessonsRequest;
 import com.chico.chico.service.LessonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +38,14 @@ public class LessonController {
     ) {
         lessonService.deleteLesson(lessonId);
         return ResponseEntity.ok("Lesson's been deleted successfully");
+    }
+
+    @PutMapping("/course/{courseId}/lessons/reorder")
+    public ResponseEntity<String> reorderLessons(
+            @PathVariable Long courseId,
+            @RequestBody ReorderLessonsRequest request
+            ) {
+         lessonService.reorderLessons(courseId, request);
+         return ResponseEntity.ok("Lessons have been reordered");
     }
 }

@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
-    List<Lesson> findByCourseIdOrderByNumberAsc(Long courseId);
+    List<Lesson> findByCourseIdOrderByOrderNumberAsc(Long courseId);
 }

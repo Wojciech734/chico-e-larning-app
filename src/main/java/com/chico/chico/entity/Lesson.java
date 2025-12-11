@@ -21,9 +21,8 @@ public class Lesson {
 
     private String videoUrl;
 
-    private Integer number;
+    private Integer orderNumber;
 
-    @Lob
     private String content;
 
     private String pdfUrl;
