@@ -16,6 +16,7 @@ public class CourseDTO {
     private String description;
     private String image;
     private LocalDateTime createdAt;
+    private boolean isPublic;
     private String teacherName;
     private String categoryName;
     private int lessonsCount;

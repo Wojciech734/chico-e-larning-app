@@ -16,4 +16,9 @@ public interface CourseService {
     List<CourseDTO> getCoursesByCategory(String categoryName);
 
     CourseDTO editCourse(Long courseId, Course updatedCourse);
+
+    void publishCourse(Long courseId);
+
+    void hideCourse(Long courseId);
+
 }

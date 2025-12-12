@@ -54,7 +54,7 @@ public class LessonServiceImpl implements LessonService {
 
     @Override
     public List<LessonDTO> getAllLessons(Long courseId) {
-        List<Lesson> lessons = lessonRepository.findByCourseIdOrderByOrderNumberAsc(courseId);
+        List<Lesson> lessons = lessonRepository.findByCourseIdOrderByNumberAsc(courseId);
         return lessons.stream()
                 .map(this::mapToDTO)
                 .toList();
@@ -84,8 +84,8 @@ public class LessonServiceImpl implements LessonService {
             lesson.setTitle(updatedLesson.getTitle());
         }
 
-        if (updatedLesson.getOrderNumber() != null) {
-            lesson.setOrderNumber(updatedLesson.getOrderNumber());
+        if (updatedLesson.getNumber() != null) {
+            lesson.setNumber(updatedLesson.getNumber());
         }
 
         if (updatedLesson.getPdfUrl() != null) {
@@ -146,7 +146,7 @@ public class LessonServiceImpl implements LessonService {
         }
 
         List<Lesson> lessons = lessonRepository
-                .findByCourseIdOrderByOrderNumberAsc(courseId);
+                .findByCourseIdOrderByNumberAsc(courseId);
 
         Map<Long, Lesson> map = lessons.stream()
                 .collect(Collectors.toMap(Lesson::getId, l -> l));
@@ -155,7 +155,7 @@ public class LessonServiceImpl implements LessonService {
         for (Long id : request.getLessonIds()) {
             Lesson lesson = map.get(id);
             if (lesson != null) {
-                lesson.setOrderNumber(index++);
+                lesson.setNumber(index++);
             }
         }
 
@@ -167,7 +167,7 @@ public class LessonServiceImpl implements LessonService {
                 lesson.getId(),
                 lesson.getTitle(),
                 lesson.getVideoUrl(),
-                lesson.getOrderNumber(),
+                lesson.getNumber(),
                 lesson.getContent(),
                 lesson.getPdfUrl(),
                 lesson.getCourse().getTitle()

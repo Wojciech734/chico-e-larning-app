@@ -21,7 +21,7 @@ public class Lesson {
 
     private String videoUrl;
 
-    private Integer orderNumber;
+    private Integer number;
 
     private String content;
 

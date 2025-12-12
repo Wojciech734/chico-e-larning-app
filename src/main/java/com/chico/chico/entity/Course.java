@@ -34,6 +34,8 @@ public class Course {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    private boolean isPublic;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
     private User teacher;

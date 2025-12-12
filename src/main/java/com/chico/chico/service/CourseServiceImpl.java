@@ -43,6 +43,7 @@ public class CourseServiceImpl implements CourseService {
         }
 
         course.setTeacher(teacher);
+        course.setPublic(false);
 
         return mapToDTO(courseRepository.save(course));
     }
@@ -123,6 +124,68 @@ public class CourseServiceImpl implements CourseService {
         return mapToDTO(courseRepository.save(course));
     }
 
+    @Override
+    public void publishCourse(Long courseId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+        if (!course.getTeacher().equals(user)) {
+            throw new NotTheOwnerException("You can only edit your own courses");
+        }
+
+        course.setPublic(true);
+        courseRepository.save(course);
+    }
+
+    @Override
+    public void hideCourse(Long courseId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+        if (!course.getTeacher().equals(user)) {
+            throw new NotTheOwnerException("You can only edit your own courses");
+        }
+
+        course.setPublic(false);
+        courseRepository.save(course);
+    }
+
+//    @Override
+//    public void changeCourseStatus(Long courseId) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//
+//        String email = authentication.getName();
+//
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UserNotFoundException("User not found"));
+//
+//        Course course = courseRepository.findById(courseId)
+//                .orElseThrow(() -> new CourseNotFoundException("Course not found"));
+//
+//        if (!course.getTeacher().equals(user)) {
+//            throw new NotTheOwnerException("You can only edit your own courses");
+//        }
+//
+//        if (course.isPublic()) {
+//            course.setPublic(false);
+//        }
+//        course.setPublic(true);
+//    }
+
     private CourseDTO mapToDTO(Course course) {
         return new CourseDTO(
                 course.getId(),
@@ -130,6 +193,7 @@ public class CourseServiceImpl implements CourseService {
                 course.getDescription(),
                 course.getImage(),
                 course.getCreatedAt(),
+                course.isPublic(),
                 course.getTeacher().getFirstName() + " " + course.getTeacher().getLastName(),
                 course.getCategory() != null ? course.getCategory().getName() : null,
                 course.getLessons().size(),

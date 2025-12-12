@@ -56,4 +56,16 @@ public class CourseController {
     public List<LessonDTO> getAllLessons(@PathVariable Long courseId) {
         return lessonService.getAllLessons(courseId);
     }
+
+    @PutMapping("/publish/{courseId}")
+    public ResponseEntity<String> publishCourse(@PathVariable Long courseId) {
+        courseService.publishCourse(courseId);
+        return ResponseEntity.ok("Successfully published course");
+    }
+
+    @PutMapping("/hide/{courseId}")
+    public ResponseEntity<String> hideCourse(@PathVariable Long courseId) {
+        courseService.hideCourse(courseId);
+        return ResponseEntity.ok("Successfully hided course");
+    }
 }
