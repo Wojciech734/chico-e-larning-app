@@ -21,4 +21,5 @@ public interface CourseService {
 
     void hideCourse(Long courseId);
 
+    List<CourseDTO> getAllTeacherCourses();
 }

@@ -164,27 +164,20 @@ public class CourseServiceImpl implements CourseService {
         courseRepository.save(course);
     }
 
-//    @Override
-//    public void changeCourseStatus(Long courseId) {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//
-//        String email = authentication.getName();
-//
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new UserNotFoundException("User not found"));
-//
-//        Course course = courseRepository.findById(courseId)
-//                .orElseThrow(() -> new CourseNotFoundException("Course not found"));
-//
-//        if (!course.getTeacher().equals(user)) {
-//            throw new NotTheOwnerException("You can only edit your own courses");
-//        }
-//
-//        if (course.isPublic()) {
-//            course.setPublic(false);
-//        }
-//        course.setPublic(true);
-//    }
+    @Override
+    public List<CourseDTO> getAllTeacherCourses() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        List<Course> courses = courseRepository.findByTeacherId(user.getId());
+        return courses.stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
 
     private CourseDTO mapToDTO(Course course) {
         return new CourseDTO(

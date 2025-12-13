@@ -68,4 +68,9 @@ public class CourseController {
         courseService.hideCourse(courseId);
         return ResponseEntity.ok("Successfully hided course");
     }
+
+    @GetMapping("/my/courses")
+    public List<CourseDTO> getAllTeacherCourses() {
+        return courseService.getAllTeacherCourses();
+    }
 }
