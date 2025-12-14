@@ -42,8 +42,8 @@ public class CourseController {
     }
 
     @GetMapping
-    public List<CourseDTO> getCoursesByCategoryName(@RequestParam String name) {
-        return courseService.getCoursesByCategory(name);
+    public Page<CourseDTO> getCoursesByCategoryName(@RequestParam String name, Pageable pageable) {
+        return courseService.getCoursesByCategory(name, pageable);
     }
 
     @PutMapping("/course/{id}")
@@ -77,8 +77,8 @@ public class CourseController {
     }
 
     @GetMapping("/")
-    public List<CourseDTO> getPublicCourses() {
-        return courseService.getPublicCourses();
+    public Page<CourseDTO> getPublicCourses(Pageable pageable) {
+        return courseService.getPublicCourses(pageable);
     }
 
     @GetMapping("/search")

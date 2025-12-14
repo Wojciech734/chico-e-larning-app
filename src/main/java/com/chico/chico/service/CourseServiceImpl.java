@@ -81,9 +81,9 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public List<CourseDTO> getCoursesByCategory(String categoryName) {
-        return courseRepository.findByCategoryName(categoryName)
-                .stream().map(this::mapToDTO).toList();
+    public Page<CourseDTO> getCoursesByCategory(String categoryName, Pageable pageable) {
+        return courseRepository.findByCategoryName(categoryName, pageable)
+                .map(this::mapToDTO);
     }
 
     @Override
@@ -186,11 +186,9 @@ public class CourseServiceImpl implements CourseService {
     * replace it with recommendation system
     * */
     @Override
-    public List<CourseDTO> getPublicCourses() {
-        return courseRepository.findByIsPublicTrue()
-                .stream()
-                .map(this::mapToDTO)
-                .toList();
+    public Page<CourseDTO> getPublicCourses(Pageable pageable) {
+        return courseRepository.findByIsPublicTrue(pageable)
+                .map(this::mapToDTO);
     }
 
     @Override

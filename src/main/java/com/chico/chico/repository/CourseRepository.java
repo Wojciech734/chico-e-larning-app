@@ -12,11 +12,11 @@ import java.util.List;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
-    List<Course> findByCategoryName(String categoryName);
+    Page<Course> findByCategoryName(String categoryName, Pageable pageable);
 
     List<Course> findByTeacherId(Long id);
 
-    List<Course> findByIsPublicTrue();
+    Page<Course> findByIsPublicTrue(Pageable pageable);
 
     /*
     * Custom query for course search by (title, description, teacher's first and last name)

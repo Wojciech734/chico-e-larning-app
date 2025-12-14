@@ -15,7 +15,7 @@ public interface CourseService {
 
     CourseDTO getCourseById(Long id);
 
-    List<CourseDTO> getCoursesByCategory(String categoryName);
+    Page<CourseDTO> getCoursesByCategory(String categoryName, Pageable pageable);
 
     CourseDTO editCourse(Long courseId, Course updatedCourse);
 
@@ -25,7 +25,7 @@ public interface CourseService {
 
     List<CourseDTO> getAllTeacherCourses();
 
-    List<CourseDTO> getPublicCourses();
+    Page<CourseDTO> getPublicCourses(Pageable pageable);
 
     Page<CourseDTO> searchForCourses(String query, Pageable pageable);
 }
