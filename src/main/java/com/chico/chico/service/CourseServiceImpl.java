@@ -13,6 +13,8 @@ import com.chico.chico.repository.UserRepository;
 import com.chico.chico.dto.CourseDTO;
 import com.chico.chico.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -177,6 +179,24 @@ public class CourseServiceImpl implements CourseService {
         return courses.stream()
                 .map(this::mapToDTO)
                 .toList();
+    }
+
+    /*
+    * to-do:
+    * replace it with recommendation system
+    * */
+    @Override
+    public List<CourseDTO> getPublicCourses() {
+        return courseRepository.findByIsPublicTrue()
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    @Override
+    public Page<CourseDTO> searchForCourses(String query, Pageable pageable) {
+        return courseRepository.searchForCourses(query, pageable)
+                .map(this::mapToDTO);
     }
 
     private CourseDTO mapToDTO(Course course) {

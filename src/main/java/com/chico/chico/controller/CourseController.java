@@ -6,6 +6,8 @@ import com.chico.chico.dto.CourseDTO;
 import com.chico.chico.service.CourseService;
 import com.chico.chico.service.LessonService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,5 +74,15 @@ public class CourseController {
     @GetMapping("/my/courses")
     public List<CourseDTO> getAllTeacherCourses() {
         return courseService.getAllTeacherCourses();
+    }
+
+    @GetMapping("/")
+    public List<CourseDTO> getPublicCourses() {
+        return courseService.getPublicCourses();
+    }
+
+    @GetMapping("/search")
+    public Page<CourseDTO> searchForCourses(@RequestParam String query, Pageable pageable) {
+        return courseService.searchForCourses(query, pageable);
     }
 }
