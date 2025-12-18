@@ -3,6 +3,7 @@ package com.chico.chico.controller;
 import com.chico.chico.dto.UserDTO;
 import com.chico.chico.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,5 +22,11 @@ public class UserController {
     @GetMapping("/me")
     public UserDTO getCurrentUser() {
         return userService.getCurrentUser();
+    }
+
+    @PutMapping("/become-teacher")
+    public ResponseEntity<String> becomeTeacher() {
+        userService.becomeTeacher();
+        return ResponseEntity.ok("Successfully added new role to account");
     }
 }

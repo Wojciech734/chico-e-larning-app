@@ -19,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -222,6 +224,23 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return mapToDTO(user);
+    }
+
+    @Override
+    public void becomeTeacher() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Set<Role> roles = user.getRoles();
+
+        roles.add(Role.TEACHER);
+
+        user.setRoles(roles);
+        userRepository.save(user);
     }
 
     private UserDTO mapToDTO(User user) {
