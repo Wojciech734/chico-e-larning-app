@@ -3,10 +3,7 @@ package com.chico.chico.service;
 import com.chico.chico.dto.EnrollmentDTO;
 import com.chico.chico.entity.*;
 import com.chico.chico.exception.*;
-import com.chico.chico.repository.CourseRepository;
-import com.chico.chico.repository.EnrollmentRepository;
-import com.chico.chico.repository.LessonRepository;
-import com.chico.chico.repository.UserRepository;
+import com.chico.chico.repository.*;
 import com.chico.chico.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -25,6 +22,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final CourseRepository courseRepository;
     private final LessonRepository lessonRepository;
     private final JwtProvider jwtProvider;
+    private final NotificationRepository notificationRepository;
 
     @Override
     public EnrollmentDTO enrollCourse(Long courseId) {
@@ -47,6 +45,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         enrollment.setStudent(user);
         enrollment.setCourse(course);
         enrollment.setEnrolledAt(LocalDateTime.now());
+
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setTitle("You've enrolled: " + course.getTitle());
+        notification.setContent("");
+        notification.setCourseId(courseId);
+
+        notificationRepository.save(notification);
 
         return mapToDto(enrollmentRepository.save(enrollment));
     }
