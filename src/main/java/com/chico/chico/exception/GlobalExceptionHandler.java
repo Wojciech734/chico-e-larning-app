@@ -1,5 +1,6 @@
 package com.chico.chico.exception;
 
+import com.chico.chico.entity.Notification;
 import com.chico.chico.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,5 +92,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleReviewIsNull(ReviewIsNullException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @ExceptionHandler(NotificationNotFound.class)
+    public ResponseEntity<ErrorResponse> handleNotificationNotFound(NotificationNotFound e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
     }
 }

@@ -5,6 +5,7 @@ import com.chico.chico.entity.Course;
 import com.chico.chico.entity.Notification;
 import com.chico.chico.entity.User;
 import com.chico.chico.exception.CourseNotFoundException;
+import com.chico.chico.exception.NotificationNotFound;
 import com.chico.chico.exception.UserNotFoundException;
 import com.chico.chico.repository.CourseRepository;
 import com.chico.chico.repository.NotificationRepository;
@@ -31,20 +32,38 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationDTO getNotification(Long id) {
 
         Notification notification = notificationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new NotificationNotFound("Notification not found"));
 
         return mapToDTO(notification);
     }
 
     @Override
     public List<NotificationDTO> viewAllNotifications() {
-        return null;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return notificationRepository.findByUserId(user.getId());
     }
 
 
     @Override
     public void deleteNotification(Long notificationId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Notification notification = notificationRepository
+                .findById(notificationId).orElseThrow(() -> new NotificationNotFound("Notification not found"));
+
+        notificationRepository.delete(notification);
     }
 
     private NotificationDTO mapToDTO(Notification notification) {

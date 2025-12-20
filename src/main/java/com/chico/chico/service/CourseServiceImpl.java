@@ -1,6 +1,7 @@
 package com.chico.chico.service;
 
 import com.chico.chico.entity.Course;
+import com.chico.chico.entity.Notification;
 import com.chico.chico.entity.Role;
 import com.chico.chico.entity.User;
 import com.chico.chico.exception.CourseNotFoundException;
@@ -9,6 +10,7 @@ import com.chico.chico.exception.UserIsNotATeacherException;
 import com.chico.chico.exception.UserNotFoundException;
 import com.chico.chico.repository.CourseRepository;
 import com.chico.chico.repository.LessonRepository;
+import com.chico.chico.repository.NotificationRepository;
 import com.chico.chico.repository.UserRepository;
 import com.chico.chico.dto.CourseDTO;
 import com.chico.chico.security.JwtProvider;
@@ -29,6 +31,7 @@ public class CourseServiceImpl implements CourseService {
     private final LessonRepository lessonRepository;
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final NotificationRepository notificationRepository;
 
     @Override
     public CourseDTO createCourse(Course course) {
@@ -44,10 +47,19 @@ public class CourseServiceImpl implements CourseService {
             throw new UserIsNotATeacherException("No permissions to create courses, you're not a teacher");
         }
 
+        Notification notification = new Notification();
+
         course.setTeacher(teacher);
         course.setPublic(false);
 
-        return mapToDTO(courseRepository.save(course));
+        Course savedCourse = courseRepository.save(course);
+
+        notification.setUser(teacher);
+        notification.setTitle("Change visibility of your new course.");
+        notification.setContent("course: " + savedCourse.getTitle() + " is private and only you can see it.");
+        notification.setCourseId(savedCourse.getId());
+
+        return mapToDTO(savedCourse);
     }
 
     @Override
@@ -142,7 +154,17 @@ public class CourseServiceImpl implements CourseService {
             throw new NotTheOwnerException("You can only edit your own courses");
         }
 
+        Notification notification = new Notification();
+
         course.setPublic(true);
+
+        notification.setUser(user);
+        notification.setCourseId(courseId);
+        notification.setTitle("Successfully published " + course.getTitle() + ".");
+        notification.setContent(course.getTitle() + " is now public and visible to everybody.");
+
+        notificationRepository.save(notification);
+
         courseRepository.save(course);
     }
 
@@ -162,7 +184,17 @@ public class CourseServiceImpl implements CourseService {
             throw new NotTheOwnerException("You can only edit your own courses");
         }
 
+        Notification notification = new Notification();
+
         course.setPublic(false);
+
+        notification.setUser(user);
+        notification.setCourseId(courseId);
+        notification.setTitle("Successfully made " + course.getTitle() + " private.");
+        notification.setContent(course.getTitle() + " is now private and invisible to everybody.");
+
+        notificationRepository.save(notification);
+
         courseRepository.save(course);
     }
 
